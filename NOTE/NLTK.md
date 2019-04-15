@@ -8,7 +8,9 @@
 书籍勘误信息
 - [http://www.oreilly.com/catalog/9780596516499](http://www.oreilly.com/catalog/9780596516499)
 ## 1 语言处理及Python
+
 ### 1.1 语言计算:文本及词汇
+
 #### NLTK入门
 ```python
 # 导入及浏览下载软件包
@@ -425,3 +427,230 @@ NLTK中包括美国英语的 CMU 发音词典,它是为语音合成器而设计�
 任意一个词,词典资源都有语音的代码(不同的声音有着不同的标签,称为音素)
 
 CMU 发音词典中的符号是从 Arpabet 来的,详情参考[https://en.wikipedia.org/wiki/ARPABET](https://en.wikipedia.org/wiki/ARPABET)
+
+```python
+print([w for w, pron in entries if pron[-1] == 'M' and w[-1] == 'n'])
+print(sorted(set(w[:2] for w, pron in entries if pron[0] == 'N' and w[0] != 'n')))
+"""
+['autumn', 'column', 'condemn', 'damn', 'goddamn', 'hymn', 'solemn']
+['gn', 'kn', 'mn', 'pn']
+"""
+```
+
+**音素**包含数字表示
+- 主重音(1)
+- 次重音(2)
+- 无重音(0)
+```python
+def stress(pron):
+	return [char for phone in pron for char in phone if char.isdigit()]
+
+entries = nltk.corpus.cmudict.entries()
+print([w for w, pron in entries if stress(pron) == ['0', '1', '0', '2', '0']])
+"""
+['abbreviated', 'abbreviated', 'abbreviating', ...]
+"""
+```
+通过指定词典的名字及后面带方括号的**关键字**来查词典
+
+- `prondict = nltk.corpus.cmudict.dict()`
+- `prondict['fire']`
+#### 比较词表
+词典表格的另一例子是比较词表
+
+NLTK中包含**斯瓦迪士核心词列表**(`Swadesh wordlists`),
+- 包括几种语言的约200个常用词列表
+- 语言标识符使用 ISO639双字母码
+
+核心词语料库
+- `from nltk.corpus import swadesh`
+- 指定一个语言链表来访问多语言中的同源词,或转换成一个简单的词典
+- `fr2en = swadesh.entries('fr','en')`
+#### 词汇工具:Toolbox 和 Shoebox
+
+Toolbox下载:[https://software.sil.org/toolbox/](https://software.sil.org/toolbox/)
+- 罗托卡特语(Rotokas)词典
+```python
+from nltk.corpus import toolbox
+toolbox.entries('rotokas.dic')
+"""
+[('kaa', [('ps', 'V'), ('pt', 'A'), ('ge', 'gag'), ('tkp', 'nek i pas'), ('dcsv', 'true'), ('vx', '1'), ('sc', '???'), ('dt', '29/Oct/2005'), 
+('ex', 'Apoka irakaaroi aioa-ia reoreopaoro.'), 
+('xp', 'Kaikai i pas long nek bilong Apoka bikosem i kaikai na toktok.'), 
+('xe', 'Apoka is gagging from food while talking.')]),...]
+"""
+# ('ps','V')-词性是'V'(动词)
+# ('ge', 'gag')-英文注释是'gag'
+# ex-罗托卡特语例句;xp,xe-巴布亚皮欣语和英语的翻译
+
+```
+- Toolbox文件由一些条目的集合组成,
+- 其中每个条目由一个或多个字段组成.
+- 大多数字段都是可选的或重复的
+- 这个词汇资源不能作为一个表格或电子表格来处理
+- 条目包括一系列"属性-值"对
+### 2.5 WordNet
+wordnet 是面向语义的英语词典
+
+#### 意义与同义词
+```python
+from nltk.corpus import wordnet
+wordnet.synsets('motorcar')  # car的第一个名词意义
+wordnet.synset('car.n.01').lemma_names()  # 同义词集
+wordnet.synset('car.n.01').definition()  # 词集定义
+wordnet.synset('car.n.01').examples()  # 词集例句
+"""
+[Synset('car.n.01')]
+['car', 'auto', 'automobile', 'machine', 'motorcar']
+a motor vehicle with four wheels; usually propelled by an internal combustion engine
+['he needs a car to get to work']
+"""
+```
+
+为消除歧义,将这些词标注为`car.n.01.automobile`,`car.n.01.motorcar`等
+
+这种同义词集和词的配对叫做**词条**
+- `wordnet.synset('car.n.01').lemmas()`  # 指定同义词集的所有词条
+> [Lemma('car.n.01.car'), Lemma('car.n.01.auto'), Lemma('car.n.01.automobile'), Le
+mma('car.n.01.machine'), Lemma('car.n.01.motorcar')]
+- `wordnet.lemma('car.n.01.automobile')`  # 查找特定词条
+> Lemma('car.n.01.automobile')
+- `wordnet.lemma('car.n.01.automobile').synset()`  # 查找一个词条所对应的同义词集
+> Synset('car.n.01')
+- `wordnet.lemma('car.n.01.automobile').name()`  # 得到一个词条的名字
+> 'automobile'
+- `wordnet.lemmas('car')`  # 访问所有包含词car的词条
+> [Lemma('car.n.01.car'), Lemma('car.n.02.car'), Lemma('car.n.03.car'), Lemma('car
+.n.04.car'), Lemma('cable_car.n.01.car')]
+
+#### WordNet 的层次结构
+
+树状层级结构,每个节点对应一个同义词集;边表示上位词/下位词关系(即上级概念与从属概念的关系)
+
+- 通过访问上位词来操纵层次结构
+```python
+from nltk.corpus import wordnet as wn
+motorcar = wn.synset('car.n.01')
+types_of_motorcar = motorcar.hyponyms()
+types_of_motorcar[26]
+
+"""Synset('stanley_steamer.n.01')"""
+
+sorted([lemma.name() for synset in types_of_motorcar for lemma in synset.lemmas()])
+"""
+['Model_T', 'S.U.V.', 'SUV', 'Stanley_Steamer', 'ambulance', 'beach_waggon', 'be
+ach_wagon', 'bus', 'cab', 'compact', 'compact_car', 'convertible', 'coupe', 'cru
+iser', 'electric', 'electric_automobile', 'electric_car', 'estate_car', 'gas_guz
+zler', 'hack', 'hardtop', 'hatchback', 'heap', 'horseless_carriage', 'hot-rod',
+'hot_rod', 'jalopy', 'jeep', 'landrover', 'limo', 'limousine', 'loaner', 'minica
+r', 'minivan', 'pace_car', 'patrol_car', 'phaeton', 'police_car', 'police_cruise
+r', 'prowl_car', 'race_car', 'racer', 'racing_car', 'roadster', 'runabout', 'sal
+oon', 'secondhand_car', 'sedan', 'sport_car', 'sport_utility', 'sport_utility_ve
+hicle', 'sports_car', 'squad_car', 'station_waggon', 'station_wagon', 'stock_car
+', 'subcompact', 'subcompact_car', 'taxi', 'taxicab', 'tourer', 'touring_car', '
+two-seater', 'used-car', 'waggon', 'wagon']
+"""
+```
+- `motorcar.root_hypernyms()`  # 得到一个最笼统的上位(或根上位)同义词集
+- 图形化WordNet浏览器:`nltk.app.wordnet()`
+#### 更多的词汇关系
+- 上位词和下位词被称为**词汇关系**,是上下定位"is-a"层次
+- 从条目的部件(部分)或到包含它们的东西(整体)
+	- `part_meronyms()`  # 部分
+	- `substance_meronyms()`  # 整体
+	- `member_holonyms()`  # 集合
+
+```python
+wn.synset('tree.n.01').part_meronyms()
+"""
+[Synset('burl.n.02'), Synset('crown.n.07'), Synset('limb.n.02'), Synset('stump.n.01'), Synset('trunk.n.01')]
+"""
+
+wn.synset('tree.n.01').substance_meronyms()
+"""[Synset('heartwood.n.01'), Synset('sapwood.n.01')]"""
+
+wn.synset('tree.n.01').member_holonyms()
+"""[Synset('forest.n.01')]"""
+```	
+- 单词有密切相关的意思
+- 动词有多个含义
+	- `wn.synset('walk.n.01').entailments()`
+- 反义词
+	- `wn.lemma('supply.n.02.supply').antonyms()`
+- 使用dir()查看词汇关系和同义词集上定义的其他方法
+	- `dir(wn.synset('harmony.n.02'))`
+#### 语义相似度
+如果两个同义词集公用一个特定的上位词(在上位词层次结构中属于较低层),它们一定有密切的联系
+
+
+通过查找每个同义词集的深度来量化这个普遍性概念
+```python
+from nltk.corpus import wordnet as wn
+
+right = wn.synset('right_whale.n.01')
+orca = wn.synset('orca.n.01')
+minke = wn.synset('minke_whale.n.01')
+tortoise = wn.synset('tortoise.n.01')
+novel = wn.synset('novel.n.01')
+
+hypernym1, hypernym2, hypernym3, hypernym4 = (
+	right.lowest_common_hypernyms(minke)
+	, right.lowest_common_hypernyms(orca)
+	, right.lowest_common_hypernyms(tortoise)
+	, right.lowest_common_hypernyms(novel)
+)
+
+print(hypernym1, hypernym2, hypernym3, hypernym4)
+
+depth1, depth2, depth3, depth4 = (
+	wn.synset('baleen_whale.n.01').min_depth(),
+	wn.synset('whale.n.02').min_depth(),
+	wn.synset('vertebrate.n.01').min_depth(),
+	wn.synset('entity.n.01').min_depth(),
+)
+
+print(depth1, depth2, depth3, depth4)
+
+"""
+[Synset('baleen_whale.n.01')]  # 须鲸
+[Synset('whale.n.02')]  # 鲸鱼
+[Synset('vertebrate.n.01')]  # 脊椎动物
+[Synset('entity.n.01')]  # 实体
+
+14 13 8 0
+"""
+```
+基于上位词层次结构中相互关联的最短路径下的相似度方法(归一化,无路径时返回-1):
+- `right.path_similarity(minke)  # return 0.25,越相似值越大,最大为1`  
+
+> `help(wn)` 获得更多信息 
+> NLTK包括 VerbNet(连接到WordNet的层次结构动词词典,`nltk.corpus.verbnet` 访问) 
+## 3 处理原始文本
+
+### 3.1 从网络和硬盘上访问文本
+
+#### 电子书
+nltk 包含 古腾堡项目 的一小部分样本文本。  
+对其它文本感兴趣可访问:
+[https://www.gutenberg.org/catalog/](https://www.gutenberg.org/catalog/)
+
+此站点包含 25000 本免费在线书籍(ASCII 码文本文件)  
+90%的文本是英文的,但是还包括50多种其他语言的文本材料
+
+#### 处理HTML
+
+- `nltk.clean_html(html)`  # 通过 html 字符串,返回原始文本
+
+更多处理 HTML 的内容,可以下载 `Beautiful Soup` 软件包  
+[https://www.crummy.com/software/BeautifulSoup/](https://www.crummy.com/software/BeautifulSoup/)
+
+#### 处理搜索引擎的结果
+
+- 优点:数据量大;容易使用
+- 缺点:搜索方式允许的范围受到限制;搜索引擎得到的结果在异时异地不同;返回结果可能会不可预料的变化
+
+#### 处理 RSS 订阅
+
+- Python 库 `Universal Feed Parser` 可以访问博客内容,下载:[]()
+#### 读取本地文本
+

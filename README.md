@@ -11,7 +11,7 @@
 
 [vagrant使用笔记](/NOTE/vagrant_note.md)
 
-[Python 自然语言处理](/NOTE/Natural Language Processing with Python.md)
+[Python 自然语言处理](/NOTE/NLP_with_Python.md)
 
 Natural Language Processing with Python
 ## 项目日志

@@ -1,8 +1,16 @@
 # genostack
-项目练习
+办公记录
 
 
+## 代码同步
+- pubmed 爬虫
+- xml解析
+- [README.md](/CODE/README.md)
 
+## 笔记记录
+[vagrant使用笔记](/NOTE/vagrant_note.md)
+
+[Python 自然语言处理](/NOTE/Python自然语言处理.md)
 
 
 ## 项目日志
@@ -12,13 +20,14 @@ pip install biopython
 ```
 
 ## 项目规划
+
 - [ ] 基本爬虫功能
-    -[ ] 关键字查询，返回 pmid 列表
-    -[ ] 通过 pmid 列表，展示摘要（title）
-    -[ ] 通过 pmid 批量下载
+	- [ ] 关键字查询，返回 pmid 列表
+    - [ ] 通过 pmid 列表，展示摘要（title）
+    - [ ] 通过 pmid 批量下载
 - [ ] 希望增加 ui 界面，处理
-    -[ ] 用户交互
-    -[ ] 路径参数配置 
+    - [ ] 用户交互
+    - [ ] 路径参数配置 
     
 ## 参考链接
 

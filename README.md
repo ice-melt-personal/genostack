@@ -8,11 +8,12 @@
 - [README.md](/CODE/README.md)
 
 ## 笔记记录
+
 [vagrant使用笔记](/NOTE/vagrant_note.md)
 
-[Python 自然语言处理](/NOTE/Python自然语言处理.md)
+[Python 自然语言处理](/NOTE/Natural Language Processing with Python.md)
 
-
+Natural Language Processing with Python
 ## 项目日志
 - 安装 biopython,可以对 pubmed 数据库进行处理
 ```
